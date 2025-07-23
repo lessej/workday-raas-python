@@ -4,15 +4,15 @@ import requests
 import logging
 import jwt
 from jwt.exceptions import ExpiredSignatureError
-from error import InternalException, is_generated_exception
-from request import WorkdayRequest
+from .error import InternalException, is_generated_exception
+from .request import WorkdayRequest
 
 
 def is_token_expired(token):
   if not token:
     return True
   try:
-    jwt.decode(token, verify=False)
+    jwt.decode(token, verify=False, options={'verify_signature': False })
     return False
   except ExpiredSignatureError:
     return True

@@ -2,7 +2,7 @@ import requests
 from collections.abc import Callable
 from typing import Dict, List, Union
 from requests import Response
-from error import InternalException, is_generated_exception
+from .error import InternalException, is_generated_exception
 
 
 def format_query_params(params: Union[str, List[str]]) -> str:
