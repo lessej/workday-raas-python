@@ -2,6 +2,8 @@ import requests
 from collections.abc import Callable
 from typing import Dict, List, Union
 from requests import Response
+
+from .logger import Logger
 from .error import InternalException, is_generated_exception
 
 
@@ -28,14 +30,17 @@ class WorkdayRequest:
   params: Dict = {}
   auth_request: Callable[[], str]
 
-  def __init__(self, endpoint: str, auth_request: Callable[[], str]):
-      self.endpoint = endpoint
-      self.auth_request = auth_request
+  def __init__(self, endpoint: str, auth_request: Callable[[], str], logger: Logger):
+    self.endpoint = endpoint
+    self.auth_request = auth_request
+    self.logger = logger
+    self.logger.info(f"initialized a Workday request at: {endpoint}")
 
 
   def _get_workday_res(self) -> Response:
     token = self.auth_request()
     headers = { 'Authorization': f'Bearer {token}' }
+    self.logger.info(f"fetching Workday records at: {self.endpoint}, using: {self.params}")
     res = requests.get(self.endpoint, headers=headers, params=self.params)
 
     if not res.ok:
@@ -59,6 +64,7 @@ class WorkdayRequest:
     """
     try:
       params = format_query_params(val)
+      self.logger.info(f"adding {key}: {params} to the params")
       self.params[key] = params
 
       return self

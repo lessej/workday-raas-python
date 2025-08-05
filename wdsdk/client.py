@@ -4,8 +4,10 @@ import requests
 import logging
 import jwt
 from jwt.exceptions import ExpiredSignatureError
+
 from .error import InternalException, is_generated_exception
 from .request import WorkdayRequest
+from .logger import LogLevel, Logger
 
 
 def is_token_expired(token):
@@ -38,12 +40,15 @@ class RaasClient:
   _authEndpoint: str
   _isuCrecentials: IsuCredentials
   _token: Union[str, None]
+  _logger: Logger
 
 
-  def __init__(self, isuCredentials, authEndpoint) -> None:
+  def __init__(self, isuCredentials: IsuCredentials, authEndpoint: str, logLevel = LogLevel.OFF) -> None:
     self._isuCrecentials = isuCredentials
     self._authEndpoint = authEndpoint
     self._token = None
+    self._logger = Logger(logLevel)
+    self._logger.info(f"initialized client with ID: {isuCredentials.client_id}")
 
 
   def _auth(self) -> str:
@@ -67,6 +72,7 @@ class RaasClient:
     }
 
     try:
+      self._logger.info(f"fetching auth token from Workday at: {self._authEndpoint}")
       res = requests.post(self._authEndpoint, headers=headers, data=payload)
 
       if not res.ok:
@@ -93,11 +99,7 @@ class RaasClient:
     req = client.request("my-raas-endpoint.workday.com")
     """
     auth_request = lambda: self._auth()
-    return WorkdayRequest(endpoint, auth_request)
-
-
-
-
+    return WorkdayRequest(endpoint, auth_request, self._logger)
 
 
 
